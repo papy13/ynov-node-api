@@ -35,3 +35,70 @@ exports.findAll = (req, res) => {
             })
         })
 }
+
+exports.findOne = (req, res) => {
+    console.log(req.params);
+    User.findById(req.params.id)
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({
+                    message: "User not found with id" + req.params.id
+                });
+            }
+            res.send(user);
+        })
+        .catch(err => {
+            return res.status(500).send({
+                message: err.message
+            })
+        })
+}
+
+exports.updateOne = (req, res) => {
+    User.findByIdAndUpdate(
+        req.params.id,
+        req.body
+    ).then(user => {
+        if (!user) {
+            return res.status(404).send({
+                message: "User not found"
+            })
+        }
+        // res.send(user);
+        User.findById(req.params.id)
+            .then(newUser => {
+                res.send({
+                    new_user: newUser,
+                    old_user: user
+                });
+            })
+    }).catch(err => {
+        return res.status(500).send({
+            message: err.message
+        })
+    })
+}
+
+exports.deleteOne = (req, res) => {
+    User.findByIdAndRemove(req.params.id)
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({
+                    message: "User not found"
+                })
+            }
+            res.send({
+                // message: "User with id" + req.params.id + "deleted successfully"
+                message: `User with id ${req.params.id} deleted successfully`
+            })
+        })
+}
+
+exports.removeAll = (req, res) => {
+    User.deleteMany((err) => {
+        if (err) {
+            res.send(err)
+        }
+        res.send('Users removed');
+    });
+}

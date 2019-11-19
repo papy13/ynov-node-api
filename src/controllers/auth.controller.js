@@ -41,6 +41,32 @@ exports.create = (req, res) => {
 
 exports.login = (req, res) => {
     //requête pour retrouver un user en BDD -> findOne
-    // bcrypt.compareSync(mot de passe envoyé , mot de passe en base de données);
-
+    console.log(req.body);
+    User.findOne({ email: req.body.email },
+        function(err, user) {
+            //si aucun user
+            if (!user) return res.status(404).send('user not found');
+            //comparaison des mdp
+            let passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+            //check si la comparaison est True
+            if (!passwordIsValid) return res.status(401).send({
+                auth: false,
+                token: null
+            });
+            //On génère le token grâce à la méthode sign
+            let token = jwt.sign({
+                    id: user._id,
+                    admin: user.admin
+                },
+                "supersecret", {
+                    expiresIn: 86400
+                }
+            );
+            res.status(200).send({
+                auth: true,
+                token: token,
+                data: user
+            })
+        }
+    )
 }
